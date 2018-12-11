@@ -1,5 +1,8 @@
 import re
 import functools
+# ret = re.split('[ab]','abcd')   #先按'a'分割，得到''和'bcd'，‘bcd'分割成'c','d'
+# ret = re.sub('\d','abc','asd5ads6',1)
+# ret = re.finditer('\d','asd123d')   #返回一个可迭代对象
 def check(s):
     flag = True
     if re.findall('[a-zA-Z]',s):
@@ -64,7 +67,8 @@ if __name__ == '__main__':
         print('source:',source)
         print('eval result:',eval(source))
         strs = format(source)
-        while s.count('(') > 0:
+        # print(source)
+        while source.count('(') > 0:
             strs = re.search('\([^()]*\)',source).group() #'(-40/5)
             replace_str1 = cal_mul_div(strs)  #(-8.0)
             replace_str = cal_add_sub(replace_str1)  #
@@ -72,3 +76,4 @@ if __name__ == '__main__':
         else:
             replace_str1= cal_mul_div(strs)
             replace_str = cal_add_sub(replace_str1)
+        print('my result:', source.replace("+", ""))
