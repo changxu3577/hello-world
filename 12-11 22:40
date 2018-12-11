@@ -1,0 +1,74 @@
+import re
+import functools
+def check(s):
+    flag = True
+    if re.findall('[a-zA-Z]',s):
+        print('Invalid')
+        flag = False
+    if not s.count('(') == s.count(')'):
+        print('格式错误')
+    return flag
+def format(s):
+    s = s.replace(' ','')
+    s = s.replace('++','+')
+    s = s.replace('--','+')
+    s = s.replace('+-','-')
+    return s
+def cal_mul_div(s):     #乘法（2+0.5*3.9）
+    regular = '-?\d+\.?\d*[*/]-?\d+\.?\d*'   #拿到类似'0.5[*/]3.9' 的式子
+    while re.findall(regular,s):
+        exp = re.search(regular,s).group() #exp='0.5*3.9'
+        #如果是乘法
+        if exp.count('*') == 1:
+            x,y = exp.split('*') #'0.5','3.9'
+            mul_result = str(float(x)*float(y)) #比如得到'1.9'
+            s = s.replace(exp,mul_result)
+            s = format(s)
+        if exp.count('/') == 1:
+            x,y = exp.split('/')
+            div_result = str(float(x)/float(y))
+            s = s.replace(exp,div_result)
+            s = format(s)
+    return s
+def cal_add_sub(s): #(2+15)
+    add_rule = '-?\d\.?\d*\+[\-]?\d+\.?\d*'
+    sub_rule = '-?\d\.?\d*\-[\-]?\d+\.?\d*'
+    while re.findall(add_rule,s):
+        add_list =re.findall(add_rule,s)  #exp='9+3'
+        for add_str in add_list:
+            x,y = add_str.split('+') #'9' '3'
+            add_result = "+" +str(float(x)+float(y))
+            s = s.replace(add_str,add_result)
+        s = format(s)
+    while re.findall(sub_rule,s):
+        sub_list = re.findall(sub_rule,s)
+        for sub_str in sub_list:
+            num = sub_str.split('-')
+            #-3-5的情况split会返回3个值
+            if len(num) == 3:
+                sub_result = 0
+                for i in num:
+                    if i:
+                        sub_result-=float(i)
+                sub_result=str(sub_result)
+            else:
+                x,y = num
+                sub_result = str(float(x)-float(y))
+            s = s.replace(sub_str,"+"+sub_result)
+        s = format(s)
+    return s
+cal_add_sub('(-8.0-6)')
+if __name__ == '__main__':
+    source = '1 - 2 * ( (60-30 +(-40/5) * (9-2*5/3 + 7 /3*99/4*2998 +10 * 568/14 )) - (-4*3)/ (16-3*2) )'
+    if check(source):
+        print('source:',source)
+        print('eval result:',eval(source))
+        strs = format(source)
+        while s.count('(') > 0:
+            strs = re.search('\([^()]*\)',source).group() #'(-40/5)
+            replace_str1 = cal_mul_div(strs)  #(-8.0)
+            replace_str = cal_add_sub(replace_str1)  #
+            source = format(source.replace(strs,replace_str[1:-1]))
+        else:
+            replace_str1= cal_mul_div(strs)
+            replace_str = cal_add_sub(replace_str1)
