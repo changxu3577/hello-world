@@ -1,0 +1,95 @@
+import re
+import functools
+# ret = re.split('[ab]','abcd') #先按'a'分割，得到''和'bcd'，‘bcd'分割成'c','d'
+# ret = re.sub('\d','abc','asd5ads6',1)
+# ret = re.finditer('\d','asd123d') #返回一个可迭代对象
+
+#检查合法性函数
+def check(s):
+    flag = True
+    if re.findall('[a-zA-Z]',s):
+        print('Invalid')
+        flag = False
+    if not s.count('(') == s.count(')'):
+        print('Invalid')
+        flag = False
+    return flag
+#格式化函数
+def fmt(s):
+    s = s.replace(' ','')
+    s = s.replace('++','+')
+    s = s.replace('-+','-')
+    s = s.replace('+-','-')
+    s = s.replace('--','+')
+    s = s.replace('/+','/')
+    s = s.replace('*+','*')
+    return s
+#加减法函数
+def add_sub(s):
+    add_rule ='[\-]?\d+\.?\d*\+[\-]?\d+\.?\d*'
+    sub_rule ='[\-]?\d+\.?\d*\-[\-]?\d+\.?\d*'
+    while re.findall(add_rule,s):
+        add_list = re.findall(add_rule,s)
+        for add_str in add_list:
+            #获取两个加法的数
+            x,y = add_str.split("+")
+            add_result = "+" +str(float(x)+float(y))
+            s = s.replace(add_str,add_result)
+        s = fmt(s)
+    while re.findall(sub_rule,s):
+        sub_list = re.findall(sub_rule,s)
+        for sub_str in sub_list:
+            numbers = sub_str.split('-')
+            #-3-5的情况split会返回3个值
+            if len(numbers) == 3:
+                result = 0
+                for v in numbers:
+                    if v:
+                        result -= float(v)
+            else:
+                x,y = numbers
+                result = float(x)-float(y)
+            #替换字符串
+            s = s.replace(sub_str,"+"+str(result))
+        s= fmt(s)
+    return s
+
+#乘除法函数
+def mul_div(s): #(9-3.0*5/3)
+    regular = '[\-]?\d+\.?\d*([*/]|\*\*)[\-]?\d+\.?\d*'
+    while re.findall(regular,s):
+        #获取表达式
+        expression = re.search(regular,s).group()   #拿到类似'0.2*5'的式子
+        #如果是乘法
+        if expression.count("*") == 1:
+            x,y = expression.split('*')     #将0.2 和5分别赋值给x,y
+            #计算结果
+            mul_result = str(float(x)*float(y))
+            s = s.replace(expression,mul_result)    #将计算的表达式替换为计算结果值
+            s = fmt(s)  #格式化一下
+        if expression.count("/"):
+            x,y = expression.split('/')
+            div_result = str(float(x)/float(y))
+            s = s.replace(expression,div_result)
+            s = fmt(s)
+    return s
+#除法函数
+
+
+if __name__ == '__main__':
+    source = '1 - 2 * ( (60-30 +(-40/5) * (9-2*5/3 + 7 /3*99/4*2998 +10 * 568/14 )) - (-4*3)/ (16-3*2) )'
+    if check(source):
+        print('source:',source)
+        print('eval result:',eval(source))
+        source = fmt(source)
+        print(source)
+        while source.count('(') > 0:         #先算括号里的数
+            strs = re.search('\([^()]*\)',source).group()    #去掉内层括号,得到里面的字符集 (9-2*5/3)
+            replace_str = mul_div(strs)
+            replace_str = add_sub(strs)
+            source =fmt(source.replace(strs,replace_str[1:-1]))    #返回值是'()'，切片去掉括号
+        else:
+            replace_str = mul_div(source)
+            replace_str = add_sub(source)
+            source = source.replace(source,replace_str)
+        print('my result:',source.replace("+",""))
