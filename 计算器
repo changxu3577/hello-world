@@ -16,7 +16,6 @@ def format(s):
     s = s.replace('-+','-')
     s = s.replace('- -','+')
     s = s.replace('*+','*')
-    s = s.replace('*-','*')
     s = s.replace('/+','/')
     return s
 def cal_mul_div(s):     #乘法（2+0.5*3.9）
@@ -26,7 +25,7 @@ def cal_mul_div(s):     #乘法（2+0.5*3.9）
         #如果是乘法
         if exp.count('*') == 1:
             x,y = exp.split('*') #'0.5','3.9'
-            mul_result = str(float(x)*float(y)) #比如得到'1.9'
+            mul_result ='+'+str(float(x)*float(y)) #比如得到'1.9'
             s = s.replace(exp,mul_result)
             s = format(s)
         if exp.count('/') == 1:
@@ -57,16 +56,17 @@ def cal_add_sub(s): #(2+15)
 if __name__ == '__main__':
     source = '1 - 2 * ( (60-30 +(-40/5) * (9-2*5/3 + 7 /3*99/4*2998 +10 * 568/14 )) - (-4*3)/ (16-3*2) )'
     if check(source):
-        print('source:',source)
+        # print('source:',source)
         print('eval result:',eval(source))
         strs = format(source)
-        print(source)
+        # print(source)
         while source.count('(') > 0:
             strs = re.search('\([^()]*\)',source).group() #'(-40/5)
             replace_str1 = cal_mul_div(strs)  #(-8.0)
             replace_str = cal_add_sub(replace_str1)  #
             source = format(source.replace(strs,replace_str[1:-1]))
         else:
-            replace_str1= cal_mul_div(strs)
+            strs = source
+            replace_str1= cal_mul_div(strs)         #'12776671.6952380957'
             replace_str = cal_add_sub(replace_str1)
-        print('my result:', source.replace("+", ""))
+        print('my result:',replace_str.replace('+',''))
